@@ -86,24 +86,19 @@ Prerequisites
 Node.js (LTS version recommended)
 MySQL Server
 Installation
-Clone the repository:
 
-Bash
+-->Clone the repository
 
-git clone https://github.com/<YourGitHubUsername>/Timetrix-Technologies.git
-cd Timetrix-Technologies
-(Remember to replace <YourGitHubUsername> with your actual GitHub username and the correct repository name if it differs.)
-
-Install Node.js dependencies:
+-->Install Node.js dependencies:
 Navigate to the project root where package.json is located and run:
 
 Bash
-
 npm install
-Set up the MySQL Database:
 
+-->Set up the MySQL Database:
 Log in to your MySQL server (e.g., mysql -u root -p).
-Create the database:
+
+-->Create the database:
 SQL
 
 CREATE DATABASE timetable_generator;
