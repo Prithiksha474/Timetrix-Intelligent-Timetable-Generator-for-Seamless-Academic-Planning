@@ -30,36 +30,30 @@ Database Schema
 The project uses the following tables in the timetable_generator database:
 
 courses: Stores information about available courses.
-SQL
-
 CREATE TABLE IF NOT EXISTS courses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL
 );
-staff: Stores information about academic staff members.
-SQL
 
+staff: Stores information about academic staff members.
 CREATE TABLE IF NOT EXISTS staff (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL
 );
-rooms: Stores information about available rooms/classrooms.
-SQL
 
+rooms: Stores information about available rooms/classrooms.
 CREATE TABLE IF NOT EXISTS rooms (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL
 );
-timings: Stores predefined time slots.
-SQL
 
+timings: Stores predefined time slots.
 CREATE TABLE IF NOT EXISTS timings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     time_slot VARCHAR(50) NOT NULL
 );
-staff_courses: A junction table linking staff to the courses they can teach.
-SQL
 
+staff_courses: A junction table linking staff to the courses they can teach.
 CREATE TABLE IF NOT EXISTS staff_courses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     course_id INT,
@@ -67,9 +61,8 @@ CREATE TABLE IF NOT EXISTS staff_courses (
     FOREIGN KEY (course_id) REFERENCES courses(id),
     FOREIGN KEY (staff_id) REFERENCES staff(id)
 );
-timetable: Stores the generated timetable entries.
-SQL
 
+timetable: Stores the generated timetable entries.
 CREATE TABLE IF NOT EXISTS timetable (
     id INT AUTO_INCREMENT PRIMARY KEY,
     day VARCHAR(20) NOT NULL,
@@ -88,23 +81,16 @@ MySQL Server
 Installation
 
 -->Clone the repository
-
 -->Install Node.js dependencies:
 Navigate to the project root where package.json is located and run:
-
-Bash
 npm install
-
 -->Set up the MySQL Database:
 Log in to your MySQL server (e.g., mysql -u root -p).
 
 -->Create the database:
-SQL
-
 CREATE DATABASE timetable_generator;
 USE timetable_generator;
 Run the provided SQL schema to create tables and insert sample data. You'll need to combine the CREATE TABLE and INSERT INTO statements into a single .sql file (e.g., database_setup.sql).
-SQL
 
 -- Create Courses Table
 CREATE TABLE IF NOT EXISTS courses (
@@ -227,10 +213,9 @@ const db = mysql.createConnection({
     password: 'YOUR_MYSQL_PASSWORD', // <-- Update this line
     database: 'timetable_generator'
 });
+
 Run the Backend Server:
 From the project root, execute:
-
-Bash
 
 node server.js
 You should see Server started on http://localhost:3001 and MySQL connected in your console.
@@ -252,16 +237,8 @@ Project Structure
 server.js: The main backend file containing the Express.js server, MySQL connection, and API endpoints.
 index.html: The frontend HTML file with embedded CSS and JavaScript for the user interface.
 database_setup.sql (or similar, containing the schema and sample data): SQL script for setting up the database.
-Contributing
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-
-Fork the Project
-Create your Feature Branch (git checkout -b feature/AmazingFeature)
-Commit your Changes (git commit -m 'Add some AmazingFeature')
-Push to the Branch (git push origin feature/AmazingFeature)
-Open a Pull Request
+If you have a suggestion that would make this better, please fork the repo and create a pull request. 
 
 Contact
 Prithiksha S R / https://www.linkedin.com/in/prithikshasr/
