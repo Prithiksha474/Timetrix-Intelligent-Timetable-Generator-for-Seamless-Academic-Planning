@@ -1,0 +1,257 @@
+const express = require('express');
+const mysql = require('mysql');
+const cors = require('cors');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Connect to MySQL
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'Libeyamary',  // Update with your MySQL password
+    database: 'timetable_generator'
+});
+
+// Start server
+app.listen(3001, () => {
+    console.log('Server started on http://localhost:3001');
+});
+
+db.connect((err) => {
+    if (err) {
+        console.error('MySQL connection error:', err);
+    } else {
+        console.log('MySQL connected');
+    }
+});
+
+// API to get all courses
+app.get('/courses', (req, res) => {
+    const query = 'SELECT * FROM courses';
+    db.query(query, (err, result) => {
+        if (err) throw err;
+        res.json(result);
+    });
+});
+
+// API to get all staff by course
+app.get('/staff/:course_id', (req, res) => {
+    const courseId = req.params.course_id;
+    const query = `
+        SELECT staff.id, staff.name 
+        FROM staff 
+        JOIN staff_courses ON staff.id = staff_courses.staff_id 
+        WHERE staff_courses.course_id = ?
+    `;
+    db.query(query, [courseId], (err, result) => {
+        if (err) throw err;
+        res.json(result);
+    });
+});
+
+// Function to generate timetable
+function generateTimetable(courses, staff, rooms) {
+    const timetable = [];
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    const periodsPerDay = 8;
+
+    for (let day of days) {
+        for (let period = 1; period <= periodsPerDay; period++) {
+            // Randomly select a course
+            const course = courses[Math.floor(Math.random() * courses.length)];
+            // Find the associated staff member
+            const staffMember = staff.filter(s => s.course_id === course.id)[0];
+            // Randomly select a room
+            const room = rooms[Math.floor(Math.random() * rooms.length)];
+
+            timetable.push({
+                day,
+                period,
+                course_name: course.name,  // Use course name
+                staff_name: staffMember.name,  // Use staff name
+                room_name: room.name  // Use room name
+            });
+        }
+    }
+
+    return timetable;
+}
+
+// API to generate and store timetable
+app.post('/generate-timetable', (req, res) => {
+    const queryCourses = 'SELECT id, name FROM courses';
+    const queryStaff = `
+        SELECT staff.id, staff.name, staff_courses.course_id
+        FROM staff 
+        JOIN staff_courses ON staff.id = staff_courses.staff_id
+    `;
+    const queryRooms = 'SELECT id, name FROM rooms';
+
+    db.query(queryCourses, (err, courses) => {
+        if (err) throw err;
+
+        db.query(queryStaff, (err, staff) => {
+            if (err) throw err;
+
+            db.query(queryRooms, (err, rooms) => {
+                if (err) throw err;
+
+                // Generate the timetable
+                const timetable = generateTimetable(courses, staff, rooms);
+
+                // Insert generated timetable into the database
+                const insertQuery = `
+                    INSERT INTO timetable (day, period, course_name, staff_name, room_name) 
+                    VALUES ?
+                `;
+                const values = timetable.map(entry => [
+                    entry.day, entry.period, entry.course_name, entry.staff_name, entry.room_name
+                ]);
+
+                db.query(insertQuery, [values], (err, result) => {
+                    if (err) throw err;
+                    res.json({ success: true, timetable });
+                });
+            });
+        });
+    });
+});
+
+// CSP Function
+function CSPGenerateTimetable(courses, staff, rooms, timeslots) {
+    const timetable = [];
+    const occupiedTimeslots = {};
+
+    courses.forEach((course) => {
+        let isAssigned = false;
+
+        timeslots.some((timeslot) => {
+            if (!occupiedTimeslots[timeslot]) occupiedTimeslots[timeslot] = new Set();
+
+            rooms.some((room) => {
+                if (!occupiedTimeslots[timeslot].has(room.id)) {
+                    staff.some((staffMember) => {
+                        timetable.push({
+                            course_name: course.name,
+                            staff_name: staffMember.name,
+                            room_name: room.name,
+                            timeslot
+                        });
+
+                        occupiedTimeslots[timeslot].add(room.id);
+                        isAssigned = true;
+                        return true;
+                    });
+
+                    if (isAssigned) return true;
+                }
+            });
+
+            if (isAssigned) return true;
+        });
+
+        if (!isAssigned) {
+            console.error(`No valid assignment found for course ${course.name}`);
+        }
+    });
+
+    return timetable;
+}
+
+// Genetic Algorithm Function
+function GeneticAlgorithmTimetable(courses, staff, rooms, timeslots) {
+    const populationSize = 100;
+    const generations = 50;
+    const mutationRate = 0.1;
+
+    let population = generateInitialPopulation(populationSize, courses, staff, rooms, timeslots);
+
+    for (let generation = 0; generation < generations; generation++) {
+        population = population.map(individual => ({
+            timetable: individual,
+            fitness: evaluateFitness(individual)
+        }));
+
+        population.sort((a, b) => b.fitness - a.fitness);
+        const selected = population.slice(0, populationSize / 2);
+
+        const newGeneration = [];
+        for (let i = 0; i < selected.length; i += 2) {
+            const parent1 = selected[i].timetable;
+            const parent2 = selected[i + 1] ? selected[i + 1].timetable : selected[i].timetable;
+            const [child1, child2] = crossover(parent1, parent2);
+            newGeneration.push(mutate(child1, mutationRate, staff, rooms, timeslots));
+            newGeneration.push(mutate(child2, mutationRate, staff, rooms, timeslots));
+        }
+
+        population = newGeneration;
+    }
+
+    return population[0].timetable; // Return the best timetable
+}
+
+// Generate initial population by random assignment of courses to timeslots, rooms, and staff
+function generateInitialPopulation(size, courses, staff, rooms, timeslots) {
+    const population = [];
+    for (let i = 0; i < size; i++) {
+        const timetable = [];
+        courses.forEach(course => {
+            const randomStaff = staff[Math.floor(Math.random() * staff.length)];
+            const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+            const randomTimeslot = timeslots[Math.floor(Math.random() * timeslots.length)];
+            timetable.push({ course_name: course.name, staff_name: randomStaff.name, room_name: randomRoom.name, timeslot: randomTimeslot });
+        });
+        population.push(timetable);
+    }
+    return population;
+}
+
+// Evaluate fitness of a timetable: Higher fitness means fewer conflicts (e.g., staff double-booked)
+function evaluateFitness(timetable) {
+    let score = 0;
+    const staffSchedule = {};
+    const roomSchedule = {};
+    
+    timetable.forEach(({ staff_name, room_name, timeslot }) => {
+        if (!staffSchedule[staff_name]) staffSchedule[staff_name] = new Set();
+        if (!roomSchedule[room_name]) roomSchedule[room_name] = new Set();
+
+        if (staffSchedule[staff_name].has(timeslot)) score -= 10; // Penalty for staff conflicts
+        if (roomSchedule[room_name].has(timeslot)) score -= 10; // Penalty for room conflicts
+
+        staffSchedule[staff_name].add(timeslot);
+        roomSchedule[room_name].add(timeslot);
+    });
+
+    return score; // Higher scores are better
+}
+
+// Crossover between two parents to create new children
+function crossover(parent1, parent2) {
+    const crossoverPoint = Math.floor(Math.random() * parent1.length);
+    const child1 = parent1.slice(0, crossoverPoint).concat(parent2.slice(crossoverPoint));
+    const child2 = parent2.slice(0, crossoverPoint).concat(parent1.slice(crossoverPoint));
+    return [child1, child2];
+}
+
+// Mutation: Randomly change the assignment of staff, room, or timeslot
+function mutate(timetable, mutationRate, staff, rooms, timeslots) {
+    return timetable.map(entry => {
+        if (Math.random() < mutationRate) {
+            const mutatedEntry = { ...entry };
+            // Randomly mutate staff, room, or timeslot
+            const mutationType = Math.floor(Math.random() * 3);
+            if (mutationType === 0) {
+                mutatedEntry.staff_name = staff[Math.floor(Math.random() * staff.length)].name;
+            } else if (mutationType === 1) {
+                mutatedEntry.room_name = rooms[Math.floor(Math.random() * rooms.length)].name;
+            } else {
+                mutatedEntry.timeslot = timeslots[Math.floor(Math.random() * timeslots.length)];
+            }
+            return mutatedEntry;
+        }
+        return entry;
+    });
+}
