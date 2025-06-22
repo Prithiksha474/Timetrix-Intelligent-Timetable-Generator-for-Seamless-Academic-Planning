@@ -1,4 +1,4 @@
-Timetrix: Intelligent Timetable Generator for Seamless Academic Planning
+ Timetrix: Intelligent Timetable Generator for Seamless Academic Planning
 
 Overview
 Timetrix Technologies is a web-based application designed to automate the generation of academic timetables. It aims to simplify the complex process of scheduling courses, staff, and rooms by leveraging intelligent algorithms to produce conflict-free schedules. This system provides a user-friendly interface for inputting constraints and a robust backend to process and store the generated timetables.
@@ -27,50 +27,7 @@ CSS3: Styling and responsiveness.
 JavaScript: Client-side scripting for interactive elements and API calls.
 
 Database Schema
-The project uses the following tables in the timetable_generator database:
-
-courses: Stores information about available courses.
-CREATE TABLE IF NOT EXISTS courses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
-
-staff: Stores information about academic staff members.
-CREATE TABLE IF NOT EXISTS staff (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
-
-rooms: Stores information about available rooms/classrooms.
-CREATE TABLE IF NOT EXISTS rooms (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
-
-timings: Stores predefined time slots.
-CREATE TABLE IF NOT EXISTS timings (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    time_slot VARCHAR(50) NOT NULL
-);
-
-staff_courses: A junction table linking staff to the courses they can teach.
-CREATE TABLE IF NOT EXISTS staff_courses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    course_id INT,
-    staff_id INT,
-    FOREIGN KEY (course_id) REFERENCES courses(id),
-    FOREIGN KEY (staff_id) REFERENCES staff(id)
-);
-
-timetable: Stores the generated timetable entries.
-CREATE TABLE IF NOT EXISTS timetable (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    day VARCHAR(20) NOT NULL,
-    period INT NOT NULL,
-    course_name VARCHAR(100) NOT NULL,
-    staff_name VARCHAR(100) NOT NULL,
-    room_name VARCHAR(100) NOT NULL
-);
+The project uses the following tables in the timetable_generator database as given in DB Queries file.
 
 Getting Started
 Follow these instructions to set up and run the Timetrix Technologies application locally.
@@ -90,119 +47,8 @@ Log in to your MySQL server (e.g., mysql -u root -p).
 -->Create the database:
 CREATE DATABASE timetable_generator;
 USE timetable_generator;
-Run the provided SQL schema to create tables and insert sample data. You'll need to combine the CREATE TABLE and INSERT INTO statements into a single .sql file (e.g., database_setup.sql).
+Run the provided SQL schema to create tables and insert sample data. You'll need to combine the CREATE TABLE and INSERT INTO statements into a single .sql file (e.g., DB Queries).
 
--- Create Courses Table
-CREATE TABLE IF NOT EXISTS courses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
-
--- Create Staff Table
-CREATE TABLE IF NOT EXISTS staff (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
-
--- Create Staff Courses Table
-CREATE TABLE IF NOT EXISTS staff_courses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    course_id INT,
-    staff_id INT,
-    FOREIGN KEY (course_id) REFERENCES courses(id),
-    FOREIGN KEY (staff_id) REFERENCES staff(id)
-);
-
--- Create Rooms Table
-CREATE TABLE IF NOT EXISTS rooms (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
-
--- Create Timings Table (if not already existing)
-CREATE TABLE IF NOT EXISTS timings (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    time_slot VARCHAR(50) NOT NULL
-);
-
--- Create Timetable Table
-CREATE TABLE IF NOT EXISTS timetable (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    day VARCHAR(20) NOT NULL,
-    period INT NOT NULL,
-    course_name VARCHAR(100) NOT NULL,
-    staff_name VARCHAR(100) NOT NULL,
-    room_name VARCHAR(100) NOT NULL
-);
-
--- Insert sample data into courses
-INSERT INTO courses (name) VALUES 
-('Artificial Intelligence'), 
-('Compiler Engineering'), 
-('Web Technology'), 
-('Ethical Hacking'), 
-('Hospital Waste Management'), 
-('Embedded System and Internet of Things'),
-('Web Technology Lab'), 
-('IoT Lab'), 
-('Mini Project Lab'), 
-('Coding Lab'), 
-('Library'), 
-('Seminar');
-
--- Insert sample data into staff
-INSERT INTO staff (name) VALUES 
-('Mrs. Rekha'), 
-('Dr. Rajan'), 
-('Mrs. Sivaranjani'), 
-('Dr. E. Thenmozhi'), 
-('Mrs. R. Dharani'), 
-('Dr. Sridharan'), 
-('Mrs. Muthulakshmi'), 
-('Mrs. Mary Rexcy Asha'), 
-('Dr. K. Tamilarasi'), 
-('Mrs. Priyadharshini'), 
-('Mrs. Sumathi'), 
-('Mrs. J. Benitha Christinal'), 
-('Dr. Karunkuzhali'), 
-('Mr. V. Kandasamy'), 
-('Ms. Smitha Mol'), 
-('Dr. Vijayakumar');
-
--- Insert sample data into rooms
-INSERT INTO rooms (name) VALUES 
-('IT A'), 
-('IT B'), 
-('IT C'), 
-('IT D'), 
-('IT E'), 
-('IT F');
-
--- Insert sample data into timings
-INSERT INTO timings (time_slot) VALUES 
-('08:00 - 08:50'), 
-('08:50 - 09:40'), 
-('09:40 - 10:30'), 
-('10:45 - 11:40'), 
-('11:40 - 12:40'), 
-('01:15 - 01:55'), 
-('01:55 - 02:30'), 
-('02:30 - 03:15');
-
--- Insert sample data into staff_courses
-INSERT INTO staff_courses (course_id, staff_id) VALUES
-(1, 1), (1, 2),
-(2, 3), (2, 4),
-(3, 5), (3, 6), (3, 7),
-(4, 8), (4, 9),
-(5, 10), (5, 11),
-(6, 12), (6, 13),
-(7, 5), (7, 6), (7, 7),
-(8, 12), (8, 13),
-(9, 5), (9, 14), (9, 10),
-(10, 3), (10, 4),
-(11, 15), (11, 11),
-(12, 16), (12, 10);
 Update Database Credentials: Open server.js (or your main backend file) and update the MySQL connection details, especially the password, to match your setup:
 
 JavaScript
